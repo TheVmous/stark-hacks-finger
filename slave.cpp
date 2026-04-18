@@ -1,13 +1,21 @@
 #include <Arduino.h>
 #include <BluetoothSerial.h>
+#include <ESP32Servo.h>
 
 BluetoothSerial SerialBT;
+Servo myservo;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   SerialBT.begin("Slave");
 
-  while (!SerialBT.connected()) {
+  myservo.setPeriodHertz(50);
+  myservo.attach(13, 1000, 2000);
+  //might need to callibrate these min maxes to our servo
+
+  while (!SerialBT.connected())
+  {
     delay(1000);
     Serial.println("Slave is waiting for Master to connect...");
   }
@@ -16,8 +24,24 @@ void setup() {
 
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void loop()
+{
+  if (SerialBT.available())
+  {
+    if (/*signal sent*/)
+    {
+      myservo.write(180); //close
+      SerialBT.println("Finger closed");
+    }
+    else
+    {
+      myservo.write(0); //open
+      SerialBT.println("Finger open");
+    }
+
+
+  }
+  
+  delay(50);
 
 }
-
