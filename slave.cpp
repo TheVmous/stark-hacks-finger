@@ -3,6 +3,7 @@
 #include <ESP32Servo.h>
 
 Servo myservo;
+NimBLECLient *pClient = nullptr;
 
 void setup() {
   Serial.begin(115200);
@@ -17,7 +18,7 @@ void setup() {
     const NimBLEAdvertisedDevice *device = results.getDevice(i);
 
     if (device->isAdvertisingService(masterId)) {
-      NimBLEClient *pClient = NimBLEDevice::createClient();
+      pClient = NimBLEDevice::createClient();
 
       if (!(pClient->connect(&device))) {
         Serial.println("Failed to connect, restarting...");
@@ -42,17 +43,26 @@ void setup() {
 }
 
 void loop() {
-  if (SerialBT.available()) {
-    char input = SerialBT.read();
+  NimBLECLient localClient = pClient;
+  //not sure if I need this line..
 
-    if (input == '1') {
-      myservo.write(180);  //close
-      SerialBT.println("Finger closed");
-    } else if (input == '0') {
-      myservo.write(0);  //open
-      SerialBT.println("Finger open");
+  if (localclient != nullptr && localClient->isConnected()) {
+
+    //code to be migrated
+    if (SerialBT.available()) {
+      char input = SerialBT.read();
+
+      if (input == '1') {
+        myservo.write(180);  //close
+        SerialBT.println("Finger closed");
+      } else if (input == '0') {
+        myservo.write(0);  //open
+        SerialBT.println("Finger open");
+      }
     }
+
+    delay(50);
   }
 
-  delay(50);
+  
 }
