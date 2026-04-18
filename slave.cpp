@@ -12,6 +12,7 @@ void setup() {
   myservo.setPeriodHertz(50);
   myservo.attach(13, 1000, 2000);
   //might need to callibrate these min maxes to our servo
+  myservo.write(0); //open position
 
   while (!SerialBT.connected()) {
     delay(1000);
@@ -28,7 +29,7 @@ void loop() {
     if (input == '1') {
       myservo.write(180);  //close
       SerialBT.println("Finger closed");
-    } else {
+    } else if (input == '0') {
       myservo.write(0);  //open
       SerialBT.println("Finger open");
     }
