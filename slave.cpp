@@ -10,7 +10,7 @@ void setup() {
   SerialBT.begin("Slave");
 
   myservo.setPeriodHertz(50);
-  myservo.attach(13, 1000, 2000);
+  myservo.attach(13, 500, 3000);
   //might need to callibrate these min maxes to our servo
   myservo.write(0); //open position
 
