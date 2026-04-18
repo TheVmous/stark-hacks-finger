@@ -31,12 +31,12 @@ void loop() {
 
   if (SerialBT.available()) {
     if (limitSwitch.isPressed()) {
-      SerialBT.write(1);
+      SerialBT.write('1');
       Serial.println("Switch pressed!");
     }
 
     if (limitSwitch.isReleased()) {
-      SerialBT.write(0);
+      SerialBT.write('0');
       Serial.println("Switch released!");
     }
   }
