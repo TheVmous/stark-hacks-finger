@@ -1,0 +1,34 @@
+# Build directories (Arduino IDE 2.x / Arduino CLI)
+build/
+.build/
+
+# Compiled firmware and object files
+*.bin
+*.elf
+*.hex
+*.a
+*.o
+*.d
+*.map
+*.eep
+*.eeprom
+
+# ESP32 specific artifacts
+*.partitions.bin
+*.bootloader.bin
+sdkconfig
+sdkconfig.old
+
+# IDE and Editor configurations (Arduino IDE 2.x, VS Code, Eclipse)
+.vscode/
+.theia/
+.settings/
+.project
+.cproject
+*.code-workspace
+.gcc-flags.json
+local.properties
+
+# OS generated files
+.DS_Store
+Thumbs.db
