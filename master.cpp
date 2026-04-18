@@ -7,11 +7,20 @@ exButton limitSwitch(19); //replace with desired pin
 
 void setup() {
   Serial.begin(115200);
-  SerialBT.begin("Master");
+  SerialBT.begin("Master", true);
+  
   limitSwitch.setDebouncetime(50);
 
+  int tries = 0;
+  while (!SerialBT.connect("Slave")) {
     delay(1000);
     Serial.println("Slave is waiting for Master to connect...");
+
+    if (tries >= 5) {
+      Serial.println("Failed to connect. Restarting...");
+      ESP.restart();
+    }
+    tries++;
   }
 
   Serial.println("Connected to Master.");
@@ -22,16 +31,16 @@ void loop() {
 
   if (SerialBT.available()) {
     if (limitSwitch.isPressed()) {
-      Serial.write(1);
+      SerialBT.write(1);
       Serial.println("Switch pressed!");
     }
 
     if (limitSwitch.isReleased()) {
-      Serial.write(0);
+      SerialBT.write(0);
       Serial.println("Switch released!");
     }
   }
 
-  delay(50);
+  delay(20);
 }
 
