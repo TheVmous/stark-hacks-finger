@@ -23,7 +23,7 @@ void setup() {
   BLECharacteristic *pCharacteristic =
     pService->createCharacteristic(CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
-  pCharacteristic->setValue(0);
+  pCharacteristic->setValue("0");
   pService->start();
 
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
