@@ -1,44 +1,56 @@
 #include <Arduino.h>
-#include <BluetoothSerial.h>
 #include <ezButton.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
 
-BluetoothSerial SerialBT;
+#define SERVICE_UUID        "74c435d0-62d4-4ffb-8a95-bbc672744429"
+#define CHARACTERISTIC_UUID "3091e16f-b28f-43fb-8fdc-4110e02990ea"
+
 ezButton limitSwitch(17); //replace with desired pin
 
 void setup() {
   Serial.begin(115200);
-  SerialBT.begin("Master", true);
+  Serial.println("Starting BLE");
+
+  if (!BLEDevice::init("Shoe BLE Server")) {
+    Serial.println("BLE initialization failed!");
+    return;
+  }
+  
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+  BLECharacteristic *pCharacteristic =
+    pService->createCharacteristic(CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+
+  pCharacteristic->setValue(0);
+  pService->start();
+
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06); 
+  pAdvertising->setMaxPreferred(0x12);
+  BLEDevice::startAdvertising();
+  Serial.println("Characteristic defined');
   
   limitSwitch.setDebouncetime(50);
 
-  int tries = 0;
-  while (!SerialBT.connect("Slave")) {
-    delay(1000);
-    Serial.println("Slave is waiting for Master to connect...");
-
-    if (tries >= 5) {
-      Serial.println("Failed to connect. Restarting...");
-      ESP.restart();
-    }
-    tries++;
-  }
-
-  Serial.println("Connected to Master.");
+  //Serial.println("Connected to Slave.");
 }
 
 void loop() {
   limitSwitch.loop();
 
-  if (SerialBT.available()) {
-    if (limitSwitch.isPressed()) {
-      SerialBT.write('1');
-      Serial.println("Switch pressed!");
-    }
-
-    if (limitSwitch.isReleased()) {
-      SerialBT.write('0');
-      Serial.println("Switch released!");
-    }
+  if (limitSwitch.isPressed()) {
+    SerialBT.write('1');
+    Serial.println("Switch pressed!");
+  }
+  if (limitSwitch.isReleased()) {
+    SerialBT.write('0');
+    Serial.println("Switch released!");
+  }
+  
   }
 
   delay(20);
