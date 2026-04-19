@@ -50,8 +50,6 @@ void loop() {
     SerialBT.write('0');
     Serial.println("Switch released!");
   }
-  
-  }
 
   delay(20);
 }
