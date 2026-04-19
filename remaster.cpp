@@ -7,49 +7,64 @@
 #define SERVICE_UUID        "74c435d0-62d4-4ffb-8a95-bbc672744429"
 #define CHARACTERISTIC_UUID "3091e16f-b28f-43fb-8fdc-4110e02990ea"
 
-ezButton limitSwitch(17); //replace with desired pin
+ezButton limitSwitch(17); 
+BLECharacteristic *pCharacteristic; // Make this global so loop() can see it
+bool deviceConnected = false;
+
+// Callback to track connection status
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+      deviceConnected = true;
+    };
+    void onDisconnect(BLEServer* pServer) {
+      deviceConnected = false;
+      // Restart advertising so the client can reconnect
+      BLEDevice::startAdvertising();
+    }
+};
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Starting BLE");
+  limitSwitch.setDebounceTime(50);
 
-  if (!BLEDevice::init("Shoe BLE Server")) {
-    Serial.println("BLE initialization failed!");
-    return;
-  }
-  
+  BLEDevice::init("Shoe BLE Server");
   BLEServer *pServer = BLEDevice::createServer();
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-  BLECharacteristic *pCharacteristic =
-    pService->createCharacteristic(CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+  pServer->setCallbacks(new MyServerCallbacks());
 
-  pCharacteristic->setValue("0");
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // Added PROPERTY_NOTIFY so the client gets updates automatically
+  pCharacteristic = pService->createCharacteristic(
+                      CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY
+                    );
+
   pService->start();
 
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06); 
-  pAdvertising->setMaxPreferred(0x12);
   BLEDevice::startAdvertising();
-  Serial.println("Characteristic defined');
-  
-  limitSwitch.setDebouncetime(50);
 
-  //Serial.println("Connected to Slave.");
+  Serial.println("Server started! Waiting for client...");
 }
 
 void loop() {
   limitSwitch.loop();
 
-  if (limitSwitch.isPressed()) {
-    SerialBT.write('1');
-    Serial.println("Switch pressed!");
-  }
-  if (limitSwitch.isReleased()) {
-    SerialBT.write('0');
-    Serial.println("Switch released!");
-  }
+  if (deviceConnected) {
+    if (limitSwitch.isPressed()) {
+      pCharacteristic->setValue("1");
+      pCharacteristic->notify(); // Push the '1' to the other ESP32
+      Serial.println("Switch pressed - Notified Client: 1");
+    }
 
-  delay(20);
+    if (limitSwitch.isReleased()) {
+      pCharacteristic->setValue("0");
+      pCharacteristic->notify(); // Push the '0' to the other ESP32
+      Serial.println("Switch released - Notified Client: 0");
+    }
+  }
 }
