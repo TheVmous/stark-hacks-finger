@@ -7,10 +7,10 @@
 #define OPEN 0
 
 // The remote service we wish to connect to.
-static BLEUUID serviceUUID("oh-great-master");
+static BLEUUID serviceUUID("74c435d0-62d4-4ffb-8a95-bbc672744429");
 
 // The characteristic of the remote service we are interested in.
-static BLEUUID charUUID("switch-status");
+static BLEUUID charUUID("3091e16f-b28f-43fb-8fdc-4110e02990ea");
 
 static boolean doConnect = false;
 static boolean connected = false;
@@ -159,15 +159,13 @@ void loop() {
   // with the current time since boot.
   if (connected) {
     std::string output = pRemoteCharacteristic->readValue();
-    if (val == "1") {
+    if (output == "1") {
       myservo.write(CLOSED);
       Serial.println("finger closed");
-    } else if (vall == "0") {
+    } else if (output == "0") {
       myservo.write(OPEN);
       Serial.println("finger opened");
     }
-  } else {
-    ESP.restart(); //if disconnect, restart
   }
 
   delay(500);  // Delay half a second between loops.
