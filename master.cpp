@@ -3,7 +3,7 @@
 #include <ezButton.h>
 
 BluetoothSerial SerialBT;
-exButton limitSwitch(17); //replace with desired pin
+ezButton limitSwitch(17); //replace with desired pin
 
 void setup() {
   Serial.begin(115200);
